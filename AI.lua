@@ -1,6 +1,8 @@
 require 'AI.USER_AI.Util'
 require 'AI.USER_AI.Const'
 
+local actors = {}
+
 -----------------------------
 -- global variables
 -----------------------------
@@ -139,6 +141,19 @@ local state = {}
 function state.IDLE_ST()
   TraceAI 'IDLE_ST'
 
+  if #actors ~= 0 then
+    local owner = GetV(V_OWNER,MyID)
+    for _, actor in ipairs(actors) do
+      if actor ~= owner and actor ~= MyID then
+        if (IsMonster(actor)) then
+          MyEnemy = actor
+          MyState = 'CHASE_ST'
+          break
+        end
+      end
+    end
+  end
+
   local cmd = List.popleft(ResCmdList)
   if cmd ~= nil then
     ProcessCommand(cmd)
@@ -208,7 +223,7 @@ function state.ATTACK_ST()
     return
   end
 
-  if false == IsInAttackSight(MyID, MyEnemy) then
+  if not IsInAttackSight(MyID, MyEnemy) then
     MyState = 'CHASE_ST'
     MyDestX, MyDestY = GetV(V_POSITION_APPLY_SKILLATTACKRANGE, MyEnemy, MySkill, MySkillLevel)
     Move(MyID, MyDestX, MyDestY)
@@ -292,6 +307,7 @@ function state.HOLD_CMD_ST()
   if MyEnemy ~= 0 then
     local d = GetDistance(MyEnemy, MyID)
     if d ~= -1 and d <= GetV(V_ATTACKRANGE, MyID) then
+      table.insert(actors, MyEnemy)
       Attack(MyID, MyEnemy)
     else
       MyEnemy = 0

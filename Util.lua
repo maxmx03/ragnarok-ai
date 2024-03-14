@@ -129,3 +129,84 @@ function IsInAttackSight(id1, id2)
   end
 end
 
+function GetMyEnemy(myid)
+  local result = 0
+
+  local type = GetV(V_MERTYPE, myid)
+  if type >= ARCHER01 and type <= SWORDMAN10 then
+    result = GetMyEnemyA(myid)
+  else
+    result = GetMyEnemyB(myid)
+  end
+
+  return result
+end
+
+-------------------------------------------
+--  ºñ¼±°øÇü GetMyEnemy
+-------------------------------------------
+function GetMyEnemyA(myid)
+  local result = 0
+  local owner = GetV(V_OWNER, myid)
+  local actors = GetActors()
+  local enemys = {}
+  local index = 1
+  local target
+  for i, v in ipairs(actors) do
+    if v ~= owner and v ~= myid then
+      target = GetV(V_TARGET, v)
+      if target == myid then
+        enemys[index] = v
+        index = index + 1
+      end
+    end
+  end
+
+  local min_dis = 100
+  local dis
+  for i, v in ipairs(enemys) do
+    dis = GetDistance2(myid, v)
+    if dis < min_dis then
+      result = v
+      min_dis = dis
+    end
+  end
+
+  return result
+end
+
+-------------------------------------------
+--  ¼±°øÇü GetMyEnemy
+-------------------------------------------
+function GetMyEnemyB(myid)
+  local result = 0
+  local owner = GetV(V_OWNER, myid)
+  local actors = GetActors()
+  local enemys = {}
+  local index = 1
+  local type
+  for i, v in ipairs(actors) do
+    if v ~= owner and v ~= myid then
+      target = GetV(V_TARGET, v)
+      if target == myid or target == owner or target == 0 then
+        if 1 == IsMonster(v) then
+          enemys[index] = v
+          index = index + 1
+        end
+      end
+    end
+  end
+
+  local min_dis = 100
+  local dis
+  for i, v in ipairs(enemys) do
+    dis = GetDistance2(myid, v)
+    if dis < min_dis then
+      result = v
+      min_dis = dis
+    end
+  end
+
+  return result
+end
+
