@@ -1,0 +1,14 @@
+{
+  "diagnostics.globals": [
+    "TraceAI",
+    "GetV",
+    "Move",
+    "GetMsg",
+    "GetResMsg",
+    "GetActors",
+    "IsMonster",
+    "MoveToOwner",
+    "Attack",
+    "SkillGround"
+  ]
+}
