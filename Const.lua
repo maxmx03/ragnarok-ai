@@ -1,20 +1,21 @@
---  c function
-
+-------------------------------------------------
+-- builtin.function
+-------------------------------------------------
 --[[
-function	TraceAI (string) end
-function	MoveToOwner (id) end
-function 	Move (id,x,y) end
-function	Attack (id,id) end
-function 	GetV (V_,id) end
-function	GetActors () end
-function	GetTick () end
-function	GetMsg (id) end
-function	GetResMsg (id) end
-function	SkillObject (id,level,skill,target) end
-function	SkillGround (id,level,skill,x,y) end
-function	IsMonster (id) end								-- id는 몬스터인가? yes -> 1 no -> 0
-
+function TraceAI (string) end
+function MoveToOwner (id) end
+function Move (id,x,y) end
+function Attack (id,id) end
+function GetV (V_,id) end
+function GetActors () end
+function GetTick () end
+function GetMsg (id) end
+function GetResMsg (id) end
+function SkillObject (id,level,skill,target) end
+function SkillGround (id,level,skill,x,y) end
+function IsMonster (id) end -- id yes -> 1 no -> 0
 --]]
+---
 
 -------------------------------------------------
 -- constants
@@ -119,33 +120,14 @@ SKILL_AREA_CMD = 8
 FOLLOW_CMD = 9
 --------------------------
 
---[[ 명령어 구조
-
+--[[
 MOVE_CMD
-	{명령번호,X좌표,Y좌표}
-	
 STOP_CMD
-	{명령번호}
-
 ATTACK_OBJECT_CMD
-	{명령번호,목표ID}
-
-ATTACK_AREA_CMD	
-	{명령번호,X좌표,Y좌표}
-
-PATROL_CMD	
-	{명령번호,X좌표,Y좌표}
-	
+ATTACK_AREA_CMD
+PATROL_CMD
 HOLD_CMD
-	{명령번호}
-
 SKILL_OBJECT_CMD
-	{명령번호,선택레벨,종류,목표ID}
-
 SKILL_AREA_CMD
-	{명령번호,선택레벨,종류,X좌표,Y좌표}
-
 FOLLOW_CMD
-	{명령번호}
-
 --]]

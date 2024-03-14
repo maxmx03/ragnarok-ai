@@ -9,6 +9,7 @@
     "IsMonster",
     "MoveToOwner",
     "Attack",
-    "SkillGround"
+    "SkillGround",
+    "SkillObject"
   ]
 }

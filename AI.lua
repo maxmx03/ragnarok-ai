@@ -16,8 +16,9 @@ MySkill = 0
 MySkillLevel = 0
 
 ------------- command process  ---------------------
+local command = {}
 
-function OnMOVE_CMD(x, y)
+function command.MOVE_CMD(x, y)
   TraceAI 'OnMOVE_CMD'
 
   if x == MyDestX and y == MyDestY and MOTION_MOVE == GetV(V_MOTION, MyID) then
@@ -40,7 +41,7 @@ function OnMOVE_CMD(x, y)
   MySkill = 0
 end
 
-function OnSTOP_CMD()
+function command.STOP_CMD()
   TraceAI 'OnSTOP_CMD'
 
   if GetV(V_MOTION, MyID) ~= MOTION_STAND then
@@ -53,7 +54,7 @@ function OnSTOP_CMD()
   MySkill = 0
 end
 
-function OnATTACK_OBJECT_CMD(id)
+function command.ATTACK_OBJECT_CMD(id)
   TraceAI 'OnATTACK_OBJECT_CMD'
 
   MySkill = 0
@@ -61,7 +62,7 @@ function OnATTACK_OBJECT_CMD(id)
   MyState = 'CHASE_ST'
 end
 
-function OnATTACK_AREA_CMD(x, y)
+function command.ATTACK_AREA_CMD(x, y)
   TraceAI 'OnATTACK_AREA_CMD'
 
   if x ~= MyDestX or y ~= MyDestY or MOTION_MOVE ~= GetV(V_MOTION, MyID) then
@@ -73,7 +74,7 @@ function OnATTACK_AREA_CMD(x, y)
   MyState = 'ATTACK_AREA_CMD_ST'
 end
 
-function OnPATROL_CMD(x, y)
+function command.PATROL_CMD(x, y)
   TraceAI 'OnPATROL_CMD'
 
   MyPatrolX, MyPatrolY = GetV(V_POSITION, MyID)
@@ -83,7 +84,7 @@ function OnPATROL_CMD(x, y)
   MyState = 'PATROL_CMD_ST'
 end
 
-function OnHOLD_CMD()
+function command.HOLD_CMD()
   TraceAI 'OnHOLD_CMD'
 
   MyDestX = 0
@@ -92,7 +93,7 @@ function OnHOLD_CMD()
   MyState = 'HOLD_CMD_ST'
 end
 
-function OnSKILL_OBJECT_CMD(level, skill, id)
+function command.SKILL_OBJECT_CMD(level, skill, id)
   TraceAI 'OnSKILL_OBJECT_CMD'
 
   MySkillLevel = level
@@ -101,7 +102,7 @@ function OnSKILL_OBJECT_CMD(level, skill, id)
   MyState = 'CHASE_ST'
 end
 
-function OnSKILL_AREA_CMD(level, skill, x, y)
+function command.SKILL_AREA_CMD(level, skill, x, y)
   TraceAI 'OnSKILL_AREA_CMD'
 
   Move(MyID, x, y)
@@ -112,7 +113,7 @@ function OnSKILL_AREA_CMD(level, skill, x, y)
   MyState = 'SKILL_AREA_CMD_ST'
 end
 
-function OnFOLLOW_CMD()
+function command.FOLLOW_CMD()
   if MyState ~= 'FOLLOW_CMD_ST' then
     MoveToOwner(MyID)
     MyState = 'FOLLOW_CMD_ST'
@@ -129,34 +130,7 @@ function OnFOLLOW_CMD()
 end
 
 function ProcessCommand(msg)
-  if msg[1] == MOVE_CMD then
-    OnMOVE_CMD(msg[2], msg[3])
-    TraceAI 'MOVE_CMD'
-  elseif msg[1] == STOP_CMD then
-    OnSTOP_CMD()
-    TraceAI 'STOP_CMD'
-  elseif msg[1] == ATTACK_OBJECT_CMD then
-    OnATTACK_OBJECT_CMD(msg[2])
-    TraceAI 'ATTACK_OBJECT_CMD'
-  elseif msg[1] == ATTACK_AREA_CMD then
-    OnATTACK_AREA_CMD(msg[2], msg[3])
-    TraceAI 'ATTACK_AREA_CMD'
-  elseif msg[1] == PATROL_CMD then
-    OnPATROL_CMD(msg[2], msg[3])
-    TraceAI 'PATROL_CMD'
-  elseif msg[1] == HOLD_CMD then
-    OnHOLD_CMD()
-    TraceAI 'HOLD_CMD'
-  elseif msg[1] == SKILL_OBJECT_CMD then
-    OnSKILL_OBJECT_CMD(msg[2], msg[3], msg[4], msg[5])
-    TraceAI 'SKILL_OBJECT_CMD'
-  elseif msg[1] == SKILL_AREA_CMD then
-    OnSKILL_AREA_CMD(msg[2], msg[3], msg[4], msg[5])
-    TraceAI 'SKILL_AREA_CMD'
-  elseif msg[1] == FOLLOW_CMD then
-    OnFOLLOW_CMD()
-    TraceAI 'FOLLOW_CMD'
-  end
+  command[msg[1]](msg[2], msg[3], msg[4], msg[5])
 end
 
 -------------- state process  --------------------
@@ -353,8 +327,8 @@ function FOLLOW_CMD_ST()
   TraceAI 'FOLLOW_CMD_ST'
 
   local ownerX, ownerY, myX, myY
-  ownerX, ownerY = GetV(V_POSITION, GetV(V_OWNER, MyID)) -- 주인
-  myX, myY = GetV(V_POSITION, MyID)                      -- 나
+  ownerX, ownerY = GetV(V_POSITION, GetV(V_OWNER, MyID))
+  myX, myY = GetV(V_POSITION, MyID)
 
   local d = GetDistance(ownerX, ownerY, myX, myY)
 
@@ -363,9 +337,9 @@ function FOLLOW_CMD_ST()
   end
 
   local motion = GetV(V_MOTION, MyID)
-  if motion == MOTION_MOVE then -- 이동중
+  if motion == MOTION_MOVE then
     d = GetDistance(ownerX, ownerY, MyDestX, MyDestY)
-    if d > 3 then               -- 목적지 변경 ?
+    if d > 3 then
       MoveToOwner(MyID)
       MyDestX = ownerX
       MyDestY = ownerY
