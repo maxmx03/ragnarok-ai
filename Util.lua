@@ -129,4 +129,90 @@ function IsInAttackSight(id1, id2)
   end
 end
 
+---@param id number
+local function getMaxHp(id)
+  return GetV(V_MAXHP, id)
+end
 
+---@param id number
+local function getHp(id)
+  return GetV(V_HP, id)
+end
+
+---@param id number
+local function getMaxSp(id)
+  return GetV(V_MAXSP, id)
+end
+
+---@param id number
+local function getSp(id)
+  return GetV(V_SP, id)
+end
+
+---@param id number
+---@param owner number
+local function lif(id, owner)
+  local skills = {
+    HLIF_HEAL = 8001,
+    HLIF_AVOID = 8002,
+  }
+  local ownerHp = getHp(owner)
+  local ownerHalfHp = getMaxHp(owner) - (ownerHp * 0.5)
+  local ownerMinHp = getMaxHp(owner) - (ownerHp * 0.2)
+  local lifSp = getSp(id)
+  local lifMinSp = getMaxSp(id) - (lifSp * 0.2)
+
+  if lifSp > lifMinSp then
+    if ownerHp < ownerHalfHp then
+      local level = 5
+      SkillObject(id, level, skills.HLIF_HEAL, owner)
+    elseif GetV(V_MOTION, owner) == MOTION_DAMAGE and ownerHp < ownerMinHp then
+      local level = 5
+      SkillObject(id, level, skills.HLIF_AVOID, owner)
+    end
+  end
+end
+
+---@param id number
+---@param owner number
+local function amistr(id, owner) end
+
+---@param id number
+---@param owner number
+local function filir(id, owner) end
+
+---@param id number
+---@param owner number
+local function vanilmirth(id, owner) end
+
+---@param myid number
+---@param owner number
+function AutoCast(myid, owner)
+  local humunculus = {
+    [1] = lif,
+    [2] = amistr,
+    [3] = filir,
+    [4] = vanilmirth,
+    [5] = lif,
+    [6] = amistr,
+    [7] = filir,
+    [8] = vanilmirth,
+    [9] = lif,
+    [10] = amistr,
+    [11] = filir,
+    [12] = vanilmirth,
+    [13] = lif,
+    [14] = amistr,
+    [15] = filir,
+    [16] = vanilmirth,
+    -- EIRA = 48,
+    -- BAYERI = 49,
+    -- SERA = 50,
+    -- DIETER = 51,
+    -- ELEANOR = 52,
+  }
+  local skill = humunculus[GetV(V_HOMUNTYPE, myid)]
+  if type(skill) == 'function' then
+    skill(myid, owner)
+  end
+end
