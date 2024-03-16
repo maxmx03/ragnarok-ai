@@ -157,14 +157,14 @@ local function lif(id, owner)
     HLIF_AVOID = 8002,
   }
   local ownerHp = getHp(owner)
-  local ownerHalfHp = getMaxHp(owner) - (ownerHp * 0.7)
-  local ownerMinHp = getMaxHp(owner) - (ownerHp * 0.3)
+  local ownerMinHp1 = getMaxHp(owner) - (ownerHp * 0.7)
+  local ownerMinHp2 = getMaxHp(owner) - (ownerHp * 0.5)
   local level = 5
 
-  if ownerHp < ownerHalfHp then
-    SkillObject(id, level, skills.HLIF_HEAL, owner)
-  elseif GetV(V_MOTION, owner) == MOTION_DAMAGE and ownerHp < ownerMinHp then
+  if GetV(V_MOTION, owner) == MOTION_DAMAGE and ownerHp < ownerMinHp2 then
     SkillObject(id, level, skills.HLIF_AVOID, owner)
+  elseif ownerHp < ownerMinHp1 then
+    SkillObject(id, level, skills.HLIF_HEAL, owner)
   end
 end
 
