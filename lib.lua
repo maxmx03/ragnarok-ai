@@ -23,7 +23,7 @@ end
 
 ---@param value any
 ---@param id number
----@return any
+---@return any,any
 function GetV(value, id)
   print(value, id)
 end

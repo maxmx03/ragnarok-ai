@@ -75,7 +75,7 @@ local command = {
     end
     MyDestX = x
     MyDestY = y
-    -- MyEnemy = 0
+    MyEnemy = 0
     MyState = 'ATTACK_AREA_CMD_ST'
   end,
   [5] = function(x, y)
@@ -139,15 +139,8 @@ function ProcessCommand(msg)
 end
 
 -------------- state process  --------------------
--- local function calculateCircularPosition(center_x, center_y, radius, angle)
---   local x = center_x + radius * math.cos(angle)
---   local y = center_y + radius * math.sin(angle)
---   return x, y
--- end
-
 local state = {}
--- local angle = 0
--- local angular_speed = 0.2
+
 function state.IDLE_ST()
   TraceAI 'IDLE_ST'
 
@@ -165,19 +158,6 @@ function state.IDLE_ST()
     ProcessCommand(cmd)
     return
   end
-
-  -- faz homunculo andar entorno do player, mas pode causar crash no jogo.
-  -- MyOwner.motion = GetV(V_MOTION, MyOwner.id)
-  -- if MyOwner.motion == MOTION_SIT then
-  --   local radius = 5
-  --
-  --   MyOwner.x, MyOwner.y = GetV(V_POSITION, MyOwner.id)
-  --
-  --   local x, y = calculateCircularPosition(MyOwner.x, MyOwner.y, radius, angle)
-  --   Move(MyID, x, y)
-  --   angle = angle + angular_speed
-  --   return
-  -- end
 
   AutoCast(MyID, MyOwner.id)
 
@@ -367,7 +347,7 @@ function GetMyEnemy(myid)
   for _, v in ipairs(actors) do
     if v ~= MyOwner.id and v ~= myid then
       local motion = GetV(V_MOTION, v)
-      if 1 == IsMonster(v) and motion ~= MOTION_DEAD and motion ~= MOTION_STAND then
+      if 1 == IsMonster(v) and (motion ~= MOTION_DEAD and motion ~= MOTION_STAND) then
         enemys[index] = v
         index = index + 1
       end
