@@ -139,19 +139,19 @@ function ProcessCommand(msg)
 end
 
 -------------- state process  --------------------
-
-local function calculateCircularPosition(center_x, center_y, radius, angle)
-  local x = center_x + radius * math.cos(angle)
-  local y = center_y + radius * math.sin(angle)
-  return x, y
-end
+-- local function calculateCircularPosition(center_x, center_y, radius, angle)
+--   local x = center_x + radius * math.cos(angle)
+--   local y = center_y + radius * math.sin(angle)
+--   return x, y
+-- end
 
 local state = {}
-local angle = 0
-local angular_speed = 0.2
+-- local angle = 0
+-- local angular_speed = 0.2
 function state.IDLE_ST()
   TraceAI 'IDLE_ST'
 
+  -- indiponivel no momento
   -- local object = GetMyEnemy(MyID)
   -- if object ~= 0 then
   --   MyState = 'CHASE_ST'
@@ -166,17 +166,18 @@ function state.IDLE_ST()
     return
   end
 
-  MyOwner.motion = GetV(V_MOTION, MyOwner.id)
-  if MyOwner.motion == MOTION_SIT then
-    local radius = 5
-
-    MyOwner.x, MyOwner.y = GetV(V_POSITION, MyOwner.id)
-
-    local x, y = calculateCircularPosition(MyOwner.x, MyOwner.y, radius, angle)
-    Move(MyID, x, y)
-    angle = angle + angular_speed
-    return
-  end
+  -- faz homunculo andar entorno do player, mas pode causar crash no jogo.
+  -- MyOwner.motion = GetV(V_MOTION, MyOwner.id)
+  -- if MyOwner.motion == MOTION_SIT then
+  --   local radius = 5
+  --
+  --   MyOwner.x, MyOwner.y = GetV(V_POSITION, MyOwner.id)
+  --
+  --   local x, y = calculateCircularPosition(MyOwner.x, MyOwner.y, radius, angle)
+  --   Move(MyID, x, y)
+  --   angle = angle + angular_speed
+  --   return
+  -- end
 
   AutoCast(MyID, MyOwner.id)
 
@@ -190,6 +191,8 @@ end
 
 function state.FOLLOW_ST()
   TraceAI 'FOLLOW_ST'
+
+  AutoCast(MyID, MyOwner.id)
 
   if GetDistanceFromOwner(MyID) <= 3 then
     MyState = 'IDLE_ST'
