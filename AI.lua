@@ -191,8 +191,6 @@ end
 function state.FOLLOW_ST()
   TraceAI 'FOLLOW_ST'
 
-  AutoCast(MyID, MyOwner.id)
-
   if GetDistanceFromOwner(MyID) <= 3 then
     MyState = 'IDLE_ST'
     TraceAI 'FOLLOW_ST -> IDLW_ST'

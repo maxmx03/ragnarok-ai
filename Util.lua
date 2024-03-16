@@ -159,17 +159,13 @@ local function lif(id, owner)
   local ownerHp = getHp(owner)
   local ownerHalfHp = getMaxHp(owner) - (ownerHp * 0.5)
   local ownerMinHp = getMaxHp(owner) - (ownerHp * 0.2)
-  local lifSp = getSp(id)
-  local lifMinSp = getMaxSp(id) - (lifSp * 0.2)
 
-  if lifSp > lifMinSp then
-    if ownerHp < ownerHalfHp then
-      local level = 5
-      SkillObject(id, level, skills.HLIF_HEAL, owner)
-    elseif GetV(V_MOTION, owner) == MOTION_DAMAGE and ownerHp < ownerMinHp then
-      local level = 5
-      SkillObject(id, level, skills.HLIF_AVOID, owner)
-    end
+  if ownerHp < ownerHalfHp then
+    local level = 5
+    SkillObject(id, level, skills.HLIF_HEAL, owner)
+  elseif GetV(V_MOTION, owner) == MOTION_DAMAGE and ownerHp < ownerMinHp then
+    local level = 5
+    SkillObject(id, level, skills.HLIF_AVOID, owner)
   end
 end
 
@@ -213,6 +209,11 @@ function AutoCast(myid, owner)
   }
   local skill = humunculus[GetV(V_HOMUNTYPE, myid)]
   if type(skill) == 'function' then
-    skill(myid, owner)
+    local lifSp = getSp(myid)
+    local lifMinSp = getMaxSp(myid) - (lifSp * 0.2)
+
+    if lifSp > lifMinSp then
+      skill(myid, owner)
+    end
   end
 end
