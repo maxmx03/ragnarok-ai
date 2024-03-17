@@ -197,7 +197,7 @@ local function amistr(id, owner)
   local ownerMinHp = getMaxHp(owner) - (ownerHp * 0.3)
   local level = 5
   local owner_motion = GetV(V_MOTION, owner)
-  if ownerHp < ownerMinHp then
+  if ownerHp < ownerMinHp and owner_motion == MOTION_DAMAGE then
     myskill().castle(id, level, owner)
   elseif owner_motion == MOTION_DAMAGE then
     myskill().defence(id, level, owner)
