@@ -1,4 +1,4 @@
-require 'AI.USER_AI.Const'
+require 'AI.USER_AI.src.Const'
 
 --------------------------------------------
 -- List utility

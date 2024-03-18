@@ -1,5 +1,5 @@
-require 'AI.USER_AI.Util'
-require 'AI.USER_AI.Const'
+require 'AI.USER_AI.src.Util'
+require 'AI.USER_AI.src.Const'
 
 -----------------------------
 -- global variables
