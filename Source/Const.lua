@@ -101,26 +101,26 @@ SWORDMAN10 = 30
 --------------------------------------------
 
 --------------------------
-MOTION_STAND = 0 -- Standing still
-MOTION_MOVE = 1 -- Moving
-MOTION_ATTACK = 2 -- Attacking
-MOTION_DEAD = 3 -- Laying dead
-MOTION_DAMAGE = 4 -- Taking damage
-MOTION_BENDDOWN = 5 -- Pick up item, set trap
-MOTION_SIT = 6 -- Sitting down
-MOTION_SKILL = 7 -- Used a skill
-MOTION_CASTING = 8 -- Casting a skill
-MOTION_ATTACK2 = 9 -- Attacking (other motion)
-MOTION_TOSS = 12 -- Toss something (spear boomerang / aid potion)
-MOTION_COUNTER = 13 -- Counter-attack
-MOTION_PERFORM = 17 -- Performance
-MOTION_JUMP_UP = 19 -- TaeKwon Kid Leap -- rising
+MOTION_STAND = 0      -- Standing still
+MOTION_MOVE = 1       -- Moving
+MOTION_ATTACK = 2     -- Attacking
+MOTION_DEAD = 3       -- Laying dead
+MOTION_DAMAGE = 4     -- Taking damage
+MOTION_BENDDOWN = 5   -- Pick up item, set trap
+MOTION_SIT = 6        -- Sitting down
+MOTION_SKILL = 7      -- Used a skill
+MOTION_CASTING = 8    -- Casting a skill
+MOTION_ATTACK2 = 9    -- Attacking (other motion)
+MOTION_TOSS = 12      -- Toss something (spear boomerang / aid potion)
+MOTION_COUNTER = 13   -- Counter-attack
+MOTION_PERFORM = 17   -- Performance
+MOTION_JUMP_UP = 19   -- TaeKwon Kid Leap -- rising
 MOTION_JUMP_FALL = 20 -- TaeKwon Kid Leap -- falling
-MOTION_SOULLINK = 23 -- Soul linker using a link skill
-MOTION_TUMBLE = 25 -- Tumbling / TK Kid Leap Landing
-MOTION_BIGTOSS = 28 -- A heavier toss (slim potions / acid demonstration)
+MOTION_SOULLINK = 23  -- Soul linker using a link skill
+MOTION_TUMBLE = 25    -- Tumbling / TK Kid Leap Landing
+MOTION_BIGTOSS = 28   -- A heavier toss (slim potions / acid demonstration)
 MOTION_DESPERADO = 38 -- Desperado
-MOTION_XXXXXX = 39 -- ??(????????/????)
+MOTION_XXXXXX = 39    -- ??(????????/????)
 MOTION_FULLBLAST = 42 -- Full Blast
 --------------------------
 
@@ -156,7 +156,7 @@ MH_STEINWAND = 8033
 MH_ANGRIFFS_MODUS = 8035
 MH_GRANITIC_ARMOR = 8040
 MH_MAGMA_FLOW = 8039
-MH_OVERED_BOOST = 8023 
+MH_OVERED_BOOST = 8023
 MH_LIGHT_OF_REGENE = 8022
 MH_SILENT_BREEZE = 8026
 MH_PAIN_KILLER = 8021

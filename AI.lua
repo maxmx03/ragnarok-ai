@@ -20,21 +20,6 @@ local Humunculu = {
   skillLevel = 5,
   state = 'idle',
 }
-function Humunculu:getHp()
-  return GetHp(self.id)
-end
-
-function Humunculu:getMaxHp()
-  return GetMaxHp(self.id)
-end
-
-function Humunculu:getSp()
-  return GetSp(self.id)
-end
-
-function Humunculu:getMaxSp()
-  return GetMaxSp(self.id)
-end
 
 ---@class Owner
 ---@field public id number
@@ -46,22 +31,6 @@ end
 local Owner = {
   id = 0,
 }
-
-function Owner:getHp()
-  return GetHp(self.id)
-end
-
-function Owner:getMaxHp()
-  return GetMaxHp(self.id)
-end
-
-function Owner:getMaxSp()
-  return GetMaxSp(self.id)
-end
-
-function Owner:getSp()
-  return GetSp(self.id)
-end
 
 ---@class Enemy
 ---@field public id number
@@ -75,22 +44,6 @@ end
 local Enemy = {
   id = 0,
 }
-
-function Enemy:getHp()
-  return GetHp(self.id)
-end
-
-function Enemy:getMaxHp()
-  return GetMaxHp(self.id)
-end
-
-function Enemy:getMaxSp()
-  return GetMaxSp(self.id)
-end
-
-function Enemy:getSp()
-  return GetSp(self.id)
-end
 
 local Command = {
   ResCmdList = List.new(),
@@ -209,7 +162,7 @@ end
 
 function State.follow()
   TraceAI 'FOLLOW'
-  local OwnerMotion = GetMotion(Owner.id)
+  local OwnerMotion = GetV(V_MOTION, Owner.id)
   local OwnerNotMoving = OwnerMotion == MOTION_SIT or OwnerMotion == MOTION_STAND or OwnerMotion == MOTION_DEAD
   local OwnerTooClose = GetDistanceFromOwner(Humunculu.id) <= 3
 
@@ -275,15 +228,13 @@ function State.attack()
   TraceAI 'ATTACK -> ATTACK : BASIC ATTACK'
 end
 
-local function AutoCastCourotine()
+local function AutoCastCoroutine(h, o)
   while true do
-    Skill.AutoCast(Humunculu, Owner)
+    Skill.AutoCast(h, o)
     coroutine.yield()
     TraceAI 'COROUTINE_AUTOCAST'
   end
 end
-
-local co = coroutine.create(AutoCastCourotine)
 
 local isSkillsSet = false
 
@@ -294,7 +245,8 @@ function AI(myid)
     isSkillsSet = true
   end
   Owner.id = GetV(V_OWNER, Humunculu.id)
-  coroutine.resume(co)
+  local co = coroutine.create(AutoCastCoroutine)
+  coroutine.resume(co, Humunculu, Owner)
   local msg = GetMsg(myid)
   local rmsg = GetResMsg(myid)
 

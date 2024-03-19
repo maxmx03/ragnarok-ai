@@ -128,33 +128,3 @@ function IsInAttackSight(id1, id2, Humunculu)
     return false
   end
 end
-
----@param id number
----@return number
-function GetHp(id)
-  return GetV(V_HP, id)
-end
-
----@param id number
----@return number
-function GetMaxHp(id)
-  return GetV(V_MAXHP, id)
-end
-
----@param id number
----@return number
-function GetMaxSp(id)
-  return GetV(V_MAXSP, id)
-end
-
----@param id number
----@return number
-function GetSp(id)
-  return GetV(V_SP, id)
-end
-
----@param id number
----@return number
-function GetMotion(id)
-  return GetV(V_MOTION, id)
-end
