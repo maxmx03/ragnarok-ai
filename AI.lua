@@ -236,6 +236,7 @@ local function AutoCastCoroutine(h, o)
   end
 end
 
+local co = coroutine.create(AutoCastCoroutine)
 local isSkillsSet = false
 
 function AI(myid)
@@ -245,7 +246,6 @@ function AI(myid)
     isSkillsSet = true
   end
   Owner.id = GetV(V_OWNER, Humunculu.id)
-  local co = coroutine.create(AutoCastCoroutine)
   coroutine.resume(co, Humunculu, Owner)
   local msg = GetMsg(myid)
   local rmsg = GetResMsg(myid)
