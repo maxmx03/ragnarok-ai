@@ -29,7 +29,7 @@ function Skill.getSupportSkills(Humunculu)
   local amistr = {
     {
       id = HAMI_CASTLE,
-      cooldown = 10,
+      cooldown = 10, -- ITS NOT THE REAL COOLDOWN
       lastSkillTime = 0,
     },
     {
@@ -65,7 +65,64 @@ function Skill.getSupportSkills(Humunculu)
     },
   }
 
-  local skillTables = { lif, amistr, filir, vanilmirth }
+  local bayeri = {
+    {
+      id = MH_GOLDENE_FERSE,
+      cooldown = 90, -- ITS SKILL DURATION, NOT COOLDOWN
+      lastSkillTime = 0,
+    },
+    {
+      id = MH_STEINWAND,
+      cooldown = 10, -- ITS NOT THE REAL COOLDOWN
+      lastSkillTime = 0,
+    },
+    {
+      id = MH_ANGRIFFS_MODUS,
+      cooldown = 90, -- ITS SKILL DURATION, NOT COOLDOWN
+      lastSkillTime = 0,
+    },
+  }
+
+  local dieter = {
+    {
+      id = MH_GRANITIC_ARMOR,
+      cooldown = 60, -- ITS SKILL DURATION, NOT COOLDOWN
+      lastSkillTime = 0,
+    },
+    {
+      id = MH_MAGMA_FLOW,
+      cooldown = 90, -- ITS SKILL DURATION, NOT COOLDOWN
+      lastSkillTime = 0,
+    },
+  }
+
+  local eira = {
+    {
+      id = MH_OVERED_BOOST,
+      cooldown = 90, -- ITS SKILL DURATION, NOT COOLDOWN
+      lastSkillTime = 0,
+    },
+    {
+      id = MH_LIGHT_OF_REGENE,
+      cooldown = 90, -- ITS SKILL DURATION, NOT COOLDOWN
+      lastSkillTime = 0,
+    },
+    {
+      id = MH_SILENT_BREEZE,
+      cooldown = 21, -- ITS SILENCE DURATION, NOT COOLDOWN
+      lastSkillTime = 0,
+    },
+  }
+
+  local sera = {
+    {
+      id = MH_PAIN_KILLER,
+      cooldown = 120, -- ITS SKILL DURATION, NOT COOLDOWN
+      lastSkillTime = 0,
+    },
+  }
+
+  local skillTables = { lif, amistr, filir, vanilmirth, bayeri, dieter, eira, sera }
   for _, skills in ipairs(skillTables) do
     for _, skill in pairs(skills) do
       if GetV(V_SKILLATTACKRANGE, Humunculu.id, skill.id) ~= 1 then
@@ -92,17 +149,52 @@ function Skill.AutoCast(Humunculu, Owner)
   local sp = Humunculu:getSp()
   local maxSp = Humunculu:getMaxSp()
   local minSp = maxSp - (sp * 0.2)
+  local HomunculusIsFighting = GetV(V_MOTION, Humunculu.id) == MOTION_ATTACK
+    or GetV(V_MOTION, Humunculu.id) == MOTION_ATTACK2
   local OwnerBeingDamaged = GetV(V_MOTION, Owner.id) == MOTION_DAMAGE
-  local HomunculusIsFighting = GetV(V_MOTION, Humunculu.id) == MOTION_ATTACK or GetV(V_MOTION, Humunculu.id) == MOTION_ATTACK2
+  local OwnerMaxHp = Owner:getMaxHp()
+  local OwnerHp = Owner:getHp()
+  local OwnerLosingHealth = OwnerMaxHp - (OwnerHp * 0.8)
+  local OwnerIsDying = OwnerMaxHp - (OwnerHp * 0.3)
+  local OwnerIsDead = GetV(V_MOTION, Owner.id) == MOTION_DEAD
+
+  local function useSkill(skill)
+    if CanUseSkill(skill.lastSkillTime, skill.cooldown) then
+      ---TODO: VERIFY THE RANGE AND THE GET CLOSE TO THE OWNER TO USE THE SKILL
+      SkillObject(Humunculu.id, Humunculu.skillLevel, skill.id, Owner.id)
+    end
+
+    return GetTick()
+  end
 
   if sp > minSp then
     for _, skill in pairs(Humunculu.skills) do
-      if OwnerBeingDamaged then
-        if skill.id == HLIF_AVOID or skill.id == HAMI_DEFENCE then
-          if CanUseSkill(skill.lastSkillTime, skill.cooldown) then
-            SkillObject(Humunculu.id, Humunculu.skillLevel, skill.id, Owner.id)
-            skill.lastSkillTime = GetTick()
-          end
+      if OwnerIsDead then
+        if skill.id == MH_LIGHT_OF_REGENE then
+          skill.lastSkillTime = useSkill()
+          break
+        end
+      end
+
+      if OwnerLosingHealth and not OwnerIsDying then
+        if skill.id == HLIF_HEAL or skill.id == HVAN_CHAOTIC then
+          skill.lastSkillTime = useSkill()
+        end
+      elseif OwnerIsDying then
+        if
+          skill.id == HLIF_AVOID
+          or skill.id == HAMI_CASTLE
+          or skill.id == MH_STEINWAND
+          or skill.id == HVAN_CHAOTIC
+          or skill.id == MH_GRANITIC_ARMOR
+          or skill.id == MH_OVERED_BOOST
+          or skill.id == MH_SILENT_BREEZE
+        then
+          skill.lastSkillTime = useSkill()
+        end
+      elseif OwnerBeingDamaged then
+        if skill.id == HLIF_AVOID or skill.id == HAMI_DEFENCE or skill.id == MH_PAIN_KILLER then
+          skill.lastSkillTime = useSkill()
         end
       elseif HomunculusIsFighting then
         if
@@ -110,11 +202,10 @@ function Skill.AutoCast(Humunculu, Owner)
           or skill.id == HAMI_BLOODLUST
           or skill.id == HFLI_FLEET
           or skill.id == HFLI_SPEED
+          or skill.id == MH_GOLDENE_FERSE
+          or skill.id == MH_MAGMA_FLOW
         then
-          if CanUseSkill(skill.lastSkillTime, skill.cooldown) then
-            SkillObject(Humunculu.id, Humunculu.skillLevel, skill.id, Owner.id)
-            skill.lastSkillTime = GetTick()
-          end
+          skill.lastSkillTime = useSkill()
         end
       end
     end
