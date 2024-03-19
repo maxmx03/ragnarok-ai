@@ -207,6 +207,7 @@ function Skill.AutoCast(Humunculu, Owner)
           or skill.id == HFLI_FLEET
           or skill.id == HFLI_SPEED
           or skill.id == MH_GOLDENE_FERSE
+          or skill.id == MH_ANGRIFFS_MODUS
           or skill.id == MH_MAGMA_FLOW
         then
           skill.lastSkillTime = useSkill(skill)
