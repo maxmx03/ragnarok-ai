@@ -123,10 +123,12 @@ function Skill.getSupportSkills(Humunculu)
   }
 
   local skillTables = { lif, amistr, filir, vanilmirth, bayeri, dieter, eira, sera }
+  local index = 1
   for _, skills in ipairs(skillTables) do
     for _, skill in pairs(skills) do
       if GetV(V_SKILLATTACKRANGE, Humunculu.id, skill.id) ~= 1 then
-        table.insert(t, skill)
+        t[index] = skill
+        index = index + 1
       end
     end
   end
