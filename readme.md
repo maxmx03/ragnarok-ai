@@ -4,7 +4,7 @@
 
 ## Comportamento dos Humunculus
 
-Usar buffs e habilidades de suporte quando o dono precisar. O script não verifica o tipo específico de Homunculus; em vez disso, verifica se o Homunculus possui uma determinada habilidade e a utiliza conforme necessário.
+Usar buffs e habilidades de suporte quando o dono precisar. ~~O script não verifica o tipo específico de Homunculus; em vez disso, verifica se o Homunculus possui uma determinada habilidade e a utiliza conforme necessário.~~
 
 Aqui estão alguns exemplos de comportamento esperado para diferentes tipos de Homunculus:
 
