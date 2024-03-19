@@ -1,4 +1,4 @@
-require 'AI.USER_AI.src.Const'
+require 'AI.USER_AI.Source.Const'
 
 --------------------------------------------
 -- List utility
@@ -339,4 +339,34 @@ function AutoCast(myid, owner)
       skill(myid, owner)
     end
   end
+end
+
+---@param id number
+---@return number
+function GetHp(id)
+  return GetV(V_HP, id)
+end
+
+---@param id number
+---@return number
+function GetMaxHp(id)
+  return GetV(V_MAXHP, id)
+end
+
+---@param id number
+---@return number
+function GetMaxSp(id)
+  return GetV(V_MAXSP, id)
+end
+
+---@param id number
+---@return number
+function GetSp(id)
+  return GetV(V_SP, id)
+end
+
+---@param id number
+---@return number
+function GetMotion(id)
+  return GetV(V_MOTION, id)
 end
