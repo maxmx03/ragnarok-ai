@@ -1,5 +1,6 @@
 require 'AI.USER_AI.Source.Util'
 require 'AI.USER_AI.Source.Const'
+local Skill = require 'AI.USER_AI.Source.Skill'
 
 ---@class Humunculu
 ---@field public id number
@@ -139,19 +140,10 @@ local Command = {
       TraceAI 'PATROL_CMD -> CHASE'
     end
   end,
-  -- FIX: GRAVITY DEVELOPERS NEED TO FIX THIS BUG, NOT ME
   [HOLD_CMD] = function()
-    TraceAI 'HOLD_CMD'
-    local actors = GetActors()
-
-    for _, actor in ipairs(actors) do
-      if IsInAttackSight(Humunculu.id, actor, Humunculu) then
-        Enemy.id = actor
-        Humunculu.state = 'chase'
-        TraceAI 'HOLD_CMD -> CHASE'
-        break
-      end
-    end
+    -- FIX: GRAVITY DEVELOPERS NEED TO FIX THIS BUG, NOT ME.
+    -- HOLD_CMD IS NOT BEING CALLED, THIS FUNCTION SHOULD BE CALLED WHEN THE OWNER
+    -- MARK A TARGET.
   end,
   [SKILL_OBJECT_CMD] = function(level, skill, id)
     TraceAI 'SKILL_OBJECT_CMD'
@@ -201,7 +193,6 @@ end
 local State = {}
 
 function State.idle()
-  AutoCast(Humunculu.id, Owner.id)
   TraceAI 'IDLE'
 
   local cmd = List.popleft(Command.ResCmdList)
@@ -217,7 +208,6 @@ function State.idle()
 end
 
 function State.follow()
-  AutoCast(Humunculu.id, Owner.id)
   TraceAI 'FOLLOW'
   local OwnerMotion = GetMotion(Owner.id)
   local OwnerNotMoving = OwnerMotion == MOTION_SIT or OwnerMotion == MOTION_STAND or OwnerMotion == MOTION_DEAD
@@ -285,9 +275,26 @@ function State.attack()
   TraceAI 'ATTACK -> ATTACK : BASIC ATTACK'
 end
 
+local function AutoCastCourotine()
+  while true do
+    Skill.AutoCast(Humunculu, Owner)
+    coroutine.yield()
+    TraceAI 'COROUTINE_AUTOCAST'
+  end
+end
+
+local co = coroutine.create(AutoCastCourotine)
+
+local isSkillsSet = false
+
 function AI(myid)
   Humunculu.id = myid
+  if not isSkillsSet then
+    Humunculu.skills = Skill.getSupportSkills(Humunculu)
+    isSkillsSet = true
+  end
   Owner.id = GetV(V_OWNER, Humunculu.id)
+  coroutine.resume(co)
   local msg = GetMsg(myid)
   local rmsg = GetResMsg(myid)
 

@@ -138,3 +138,17 @@ SKILL_OBJECT_CMD = 7
 SKILL_AREA_CMD = 8
 FOLLOW_CMD = 9
 --------------------------
+
+--------------------------
+-- SUPPORT SKILLS
+--------------------------
+HLIF_HEAL = 8001
+HLIF_AVOID = 8002
+HLIF_CHANGE = 8004
+HAMI_CASTLE = 8005
+HAMI_DEFENCE = 8006
+HAMI_BLOODLUST = 8008
+HFLI_FLEET = 8010
+HFLI_SPEED = 8011
+HVAN_CHAOTIC = 8014
+--------------------------

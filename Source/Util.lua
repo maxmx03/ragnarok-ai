@@ -168,15 +168,7 @@ local function lif(id, owner)
   end
 end
 
-function CanUseSkill(lastSkillTime, cooldown)
-  cooldown = cooldown * 1000
-  local currentTime = GetTick()
-  if currentTime - lastSkillTime >= cooldown then
-    return true
-  else
-    return false
-  end
-end
+
 
 ---@param id number
 ---@param owner number
@@ -212,7 +204,7 @@ local function amistr(id, owner)
   end
 
   local ownerHp = getHp(owner)
-  local ownerMinHp = getMaxHp(owner) - (ownerHp * 0.3)
+  local ownerMinHp = getMaxHp(owner) - (ownerHp * 0.5)
 
   local owner_motion = GetV(V_MOTION, owner)
   if ownerHp < ownerMinHp and owner_motion == MOTION_DAMAGE then
