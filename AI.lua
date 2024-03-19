@@ -145,7 +145,7 @@ local Command = {
     local actors = GetActors()
 
     for _, actor in ipairs(actors) do
-      if IsInAttackSight(Humunculu.id, actor) then
+      if IsInAttackSight(Humunculu.id, actor, Humunculu) then
         Enemy.id = actor
         Humunculu.state = 'chase'
         TraceAI 'HOLD_CMD -> CHASE'
@@ -201,6 +201,7 @@ end
 local State = {}
 
 function State.idle()
+  AutoCast(Humunculu.id, Owner.id)
   TraceAI 'IDLE'
 
   local cmd = List.popleft(Command.ResCmdList)
@@ -216,6 +217,7 @@ function State.idle()
 end
 
 function State.follow()
+  AutoCast(Humunculu.id, Owner.id)
   TraceAI 'FOLLOW'
   local OwnerMotion = GetMotion(Owner.id)
   local OwnerNotMoving = OwnerMotion == MOTION_SIT or OwnerMotion == MOTION_STAND or OwnerMotion == MOTION_DEAD
@@ -241,7 +243,7 @@ function State.chase()
     return
   end
 
-  if IsInAttackSight(Humunculu.id, Enemy.id) then
+  if IsInAttackSight(Humunculu.id, Enemy.id, Humunculu) then
     Humunculu.state = 'attack'
     TraceAI 'CHASE -> ATTACK : ENEMY_INATTACKSIGHT_IN'
     return
@@ -270,7 +272,7 @@ function State.attack()
     return
   end
 
-  if not IsInAttackSight(Humunculu.id, Enemy.id) then
+  if not IsInAttackSight(Humunculu.id, Enemy.id, Humunculu) then
     Humunculu.state = 'chase'
     Humunculu.destX, Humunculu.destY = GetV(V_POSITION, Enemy.id)
     Move(Humunculu.id, Humunculu.destX, Humunculu.destY)
@@ -286,6 +288,19 @@ end
 function AI(myid)
   Humunculu.id = myid
   Owner.id = GetV(V_OWNER, Humunculu.id)
+  local msg = GetMsg(myid)
+  local rmsg = GetResMsg(myid)
+
+  if msg[1] == NONE_CMD then
+    if rmsg[1] ~= NONE_CMD then
+      if List.size(Command.ResCmdList) < 10 then
+        List.pushright(Command.ResCmdList, rmsg)
+      end
+    end
+  else
+    List.clear(Command.ResCmdList)
+    ProcessCommand(msg)
+  end
 
   local action = State[Humunculu.state]
 

@@ -108,7 +108,7 @@ function IsOutOfSight(id1, id2)
   end
 end
 
-function IsInAttackSight(id1, id2)
+function IsInAttackSight(id1, id2, Humunculu)
   local x1, y1 = GetV(V_POSITION, id1)
   local x2, y2 = GetV(V_POSITION, id2)
   if x1 == -1 or x2 == -1 then
@@ -119,7 +119,7 @@ function IsInAttackSight(id1, id2)
   if MySkill == 0 then
     a = GetV(V_ATTACKRANGE, id1)
   else
-    a = GetV(V_SKILLATTACKRANGE_LEVEL, id1, MySkill, MySkillLevel)
+    a = GetV(V_SKILLATTACKRANGE_LEVEL, id1, Humunculu.skill, Humunculu.skillLevel)
   end
 
   if a >= d then
@@ -168,39 +168,57 @@ local function lif(id, owner)
   end
 end
 
+function CanUseSkill(lastSkillTime, cooldown)
+  cooldown = cooldown * 1000
+  local currentTime = GetTick()
+  if currentTime - lastSkillTime >= cooldown then
+    return true
+  else
+    return false
+  end
+end
+
 ---@param id number
 ---@param owner number
 local function amistr(id, owner)
-  local skills = {
-    HAMI_CASTLE = 8005,
-    HAMI_DEFENCE = 8006,
-  }
-  local function myskill()
-    local castle_count = 0
-    local defence_count = 0
+  local function useSkill()
+    local skills = {
+      HAMI_CASTLE = {
+        id = 8005,
+        cooldown = 10,
+        lastSkillTime = 0,
+      },
+      HAMI_DEFENCE = {
+        id = 8006,
+        cooldown = 30,
+        lastSkillTime = 0,
+      },
+    }
+    local level = 5
     return {
-      castle = function(myid, level, target)
-        if castle_count % 2 == 0 then
-          SkillObject(myid, level, skills.HAMI_CASTLE, target)
+      use_castle = function()
+        if CanUseSkill(skills.HAMI_CASTLE.lastSkillTime, skills.HAMI_CASTLE.cooldown) then
+          SkillObject(id, level, skills.HAMI_CASTLE.id, owner)
+          skills.HAMI_DEFENCE.lastSkillTime = GetTick()
         end
-        castle_count = castle_count + 1
       end,
-      defence = function(myid, level, target)
-        if defence_count % 4 == 0 then
-          SkillObject(myid, level, skills.HAMI_DEFENCE, target)
+      use_defense = function()
+        if CanUseSkill(skills.HAMI_DEFENCE.lastSkillTime, skills.HAMI_DEFENCE.cooldown) then
+          SkillObject(id, level, skills.HAMI_DEFENCE.id, owner)
+          skills.HAMI_DEFENCE.lastSkillTime = GetTick()
         end
-        defence_count = defence_count + 1
       end,
     }
   end
+
   local ownerHp = getHp(owner)
   local ownerMinHp = getMaxHp(owner) - (ownerHp * 0.3)
-  local level = 5
+
   local owner_motion = GetV(V_MOTION, owner)
   if ownerHp < ownerMinHp and owner_motion == MOTION_DAMAGE then
-    myskill().castle(id, level, owner)
+    useSkill().use_castle()
   elseif owner_motion == MOTION_DAMAGE then
-    myskill().defence(id, level, owner)
+    useSkill().use_defense()
   end
 end
 
