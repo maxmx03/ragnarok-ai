@@ -146,35 +146,11 @@ function GetMaxSp(id)
   return GetV(V_MAXSP, id)
 end
 
----@param lastSkillTime number
----@param cooldown number
----@return boolean
-local function CanUseSkill(lastSkillTime, cooldown)
-  local currentTime = GetTick()
-  if currentTime - lastSkillTime > (cooldown * 1000) then
-    return true
-  else
-    return false
-  end
-end
-
 ---@param id number
 ---@param skill table
 ---@param target number
----@return number
 function UseSkill(id, skill, target)
+  local level = 5
+  SkillObject(id, level, skill.id, target)
   TraceAI('AUTO_CAST -> USE_SKILL: ' .. skill.id)
-
-  if CanUseSkill(skill.lastSkillTime, skill.cooldown) then
-    local x, y = GetV(V_POSITION_APPLY_SKILLATTACKRANGE, target, skill.id, skill.skillLevel)
-    local destX, destY = GetV(V_POSITION, id)
-    if destX ~= x or destY ~= y then
-      destX, destY = GetV(V_POSITION_APPLY_SKILLATTACKRANGE, target, skill.id, skill.skillLevel)
-      Move(id, destX, destY)
-      TraceAI 'AUTO_CAST -> CHASE : DESTCHANGED_IN'
-    end
-  end
-
-  SkillObject(id, skill.skillLevel, skill.id, target)
-  return GetTick()
 end

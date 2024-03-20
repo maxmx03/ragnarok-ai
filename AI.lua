@@ -85,7 +85,7 @@ local Command = {
     TraceAI 'SKILL_OBJECT_CMD'
     Enemy.id = id
     Humunculu.skill = skill
-    Humunculu.level = level
+    Humunculu.skillLevel = level
     Humunculu.state = 'chase'
     TraceAI 'SKILL_OBJECT_CMD -> CHASE'
   end,
@@ -139,28 +139,28 @@ local State = {
         or skill.id == MH_ANGRIFFS_MODUS
         or skill.id == MH_MAGMA_FLOW
       then
-        skill.lastSkillTime = UseSkill(Humunculu.id, skill, Owner.id)
+        UseSkill(Humunculu.id, skill, Owner.id)
       end
     end
-    Humunculu.state = 'watch'
+    Humunculu.state = 'idle'
   end,
   [OWNER_DAMAGED] = function()
     TraceAI 'OWNER_DAMAGED'
     for _, skill in pairs(Humunculu.skills) do
       if skill.id == HLIF_AVOID or skill.id == HAMI_DEFENCE or skill.id == MH_PAIN_KILLER then
-        skill.lastSkillTime = UseSkill(Humunculu.id, skill, Owner.id)
+        UseSkill(Humunculu.id, skill, Owner.id)
       end
     end
-    Humunculu.state = 'watch'
+    Humunculu.state = 'idle'
   end,
   [OWNER_LOST_HEALTH] = function()
     TraceAI 'OWNER_LOST_HEALTH'
     for _, skill in pairs(Humunculu.skills) do
       if skill.id == HLIF_HEAL or skill.id == HVAN_CHAOTIC then
-        skill.lastSkillTime = UseSkill(Humunculu.id, skill, Owner.id)
+        UseSkill(Humunculu.id, skill, Owner.id)
       end
     end
-    Humunculu.state = 'watch'
+    Humunculu.state = 'idle'
   end,
   [OWNER_DYING] = function()
     TraceAI 'OWNER_DYING'
@@ -174,19 +174,19 @@ local State = {
         or skill.id == MH_OVERED_BOOST
         or skill.id == MH_SILENT_BREEZE
       then
-        skill.lastSkillTime = UseSkill(Humunculu.id, skill, Owner.id)
+        UseSkill(Humunculu.id, skill, Owner.id)
       end
     end
-    Humunculu.state = 'watch'
+    Humunculu.state = 'idle'
   end,
   [OWNER_DEAD] = function()
     TraceAI 'OWNER_DEAD'
     for _, skill in pairs(Humunculu.skills) do
       if skill.id == MH_LIGHT_OF_REGENE then
-        skill.lastSkillTime = UseSkill(Humunculu.id, skill, Owner.id)
+        UseSkill(Humunculu.id, skill, Owner.id)
       end
     end
-    Humunculu.state = 'watch'
+    Humunculu.state = 'idle'
   end,
   [WATCH] = function()
     TraceAI 'WATCH'
@@ -325,11 +325,16 @@ local State = {
   end,
 }
 
+local gotSkill = false
+
 function AI(myid)
   Humunculu.id = myid
-  Humunculu.skills = Skill.getSkills(Humunculu)
+  Owner.id = GetV(V_OWNER, myid)
+  if not gotSkill then
+    Humunculu.skills = Skill.getSkills(Humunculu)
+    gotSkill = true
+  end
 
-  Owner.id = GetV(V_OWNER, Humunculu.id)
   local msg = GetMsg(myid)
   local rmsg = GetResMsg(myid)
 
