@@ -148,6 +148,8 @@ local State = {}
 function State.idle()
   TraceAI 'IDLE'
 
+  Skill.AutoCast(Humunculu, Owner)
+
   local cmd = List.popleft(Command.ResCmdList)
   if cmd ~= nil then
     ProcessCommand(cmd)
@@ -162,6 +164,9 @@ end
 
 function State.follow()
   TraceAI 'FOLLOW'
+
+  Skill.AutoCast(Humunculu, Owner)
+
   local OwnerMotion = GetV(V_MOTION, Owner.id)
   local OwnerNotMoving = OwnerMotion == MOTION_SIT or OwnerMotion == MOTION_STAND or OwnerMotion == MOTION_DEAD
   local OwnerTooClose = GetDistanceFromOwner(Humunculu.id) <= 3
@@ -228,15 +233,6 @@ function State.attack()
   TraceAI 'ATTACK -> ATTACK : BASIC ATTACK'
 end
 
-local function AutoCastCoroutine(h, o)
-  while true do
-    Skill.AutoCast(h, o)
-    coroutine.yield()
-    TraceAI 'COROUTINE_AUTOCAST'
-  end
-end
-
-local co = coroutine.create(AutoCastCoroutine)
 local isSkillsSet = false
 
 function AI(myid)
@@ -246,7 +242,6 @@ function AI(myid)
     isSkillsSet = true
   end
   Owner.id = GetV(V_OWNER, Humunculu.id)
-  coroutine.resume(co, Humunculu, Owner)
   local msg = GetMsg(myid)
   local rmsg = GetResMsg(myid)
 
