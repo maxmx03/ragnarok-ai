@@ -268,8 +268,8 @@ local State = {
       Humunculu.state = 'idle'
       TraceAI 'FOLLOW -> IDLE : OWNER_NOT_MOVING | OWNER_TOO_CLOSE'
     else
-      Humunculu.state = 'watch'
-      TraceAI 'FOLLOW -> WATCH'
+      MoveToOwner(Humunculu.id)
+      TraceAI 'FOLLOW -> FOLLOW'
     end
   end,
   [CHASE] = function()
