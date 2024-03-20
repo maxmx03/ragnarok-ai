@@ -140,6 +140,21 @@ FOLLOW_CMD = 9
 --------------------------
 
 --------------------------
+-- STATE
+--------------------------
+WATCH = 'watch'
+IDLE = 'idle'
+FOLLOW = 'follow'
+CHASE = 'chase'
+ATTACK = 'attack'
+HUMUNCULU_FIGHTING = 'fighting'
+OWNER_DAMAGED = 'damage'
+OWNER_LOST_HEALTH = 'health'
+OWNER_DYING = 'dying'
+OWNER_DEAD = 'dead'
+--------------------------
+
+--------------------------
 -- SUPPORT SKILLS
 --------------------------
 HLIF_HEAL = 8001
