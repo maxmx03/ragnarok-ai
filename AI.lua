@@ -173,6 +173,7 @@ function State.follow()
 
   if OwnerNotMoving or OwnerTooClose then
     Humunculu.state = 'idle'
+    MoveToOwner(Humunculu.id)
     TraceAI 'FOLLOW -> IDLE : OWNER_NOT_MOVING | OWNER_TOO_CLOSE'
   else
     MoveToOwner(Humunculu.id)
@@ -182,7 +183,7 @@ end
 
 function State.chase()
   TraceAI 'CHASE'
-  local OwnerTooFar = GetDistanceFromOwner(Owner.id) > 10
+  local OwnerTooFar = GetDistanceFromOwner(Humunculu.id) > 10
 
   if IsOutOfSight(Humunculu.id, Enemy.id) or OwnerTooFar then
     Humunculu.state = 'follow'
