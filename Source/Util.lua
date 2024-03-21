@@ -154,3 +154,136 @@ function UseSkill(id, skill, target)
   SkillObject(id, level, skill.id, target)
   TraceAI('AUTO_CAST -> USE_SKILL: ' .. skill.id)
 end
+
+function GetOwnerEnemy(myid)
+  local result = 0
+  local owner = GetV(V_OWNER, myid)
+  local actors = GetActors()
+  local enemys = {}
+  local index = 1
+  local target
+  for i, v in ipairs(actors) do
+    if v ~= owner and v ~= myid then
+      target = GetV(V_TARGET, v)
+      if target == owner then
+        if IsMonster(v) == 1 then
+          enemys[index] = v
+          index = index + 1
+        else
+          local motion = GetV(V_MOTION, i)
+          if motion == MOTION_ATTACK or motion == MOTION_ATTACK2 then
+            enemys[index] = v
+            index = index + 1
+          end
+        end
+      end
+    end
+  end
+
+  local min_dis = 100
+  local dis
+  for i, v in ipairs(enemys) do
+    dis = GetDistance2(myid, v)
+    if dis < min_dis then
+      result = v
+      min_dis = dis
+    end
+  end
+
+  return result
+end
+
+function GetMyEnemy(myid)
+  -- local result = 0
+
+  -- local homun = GetV(V_HOMUNTYPE, myid)
+  -- if
+  --   homun == LIF
+  --   or homun == LIF_H
+  --   or homun == AMISTR
+  --   or homun == AMISTR_H
+  --   or homun == LIF2
+  --   or homun == LIF_H2
+  --   or homun == AMISTR2
+  --   or homun == AMISTR_H2
+  -- then
+  --   result = GetMyEnemyA(myid)
+  -- elseif
+  --   homun == FILIR
+  --   or homun == FILIR_H
+  --   or homun == VANILMIRTH
+  --   or homun == VANILMIRTH_H
+  --   or homun == FILIR2
+  --   or homun == FILIR_H2
+  --   or homun == VANILMIRTH2
+  --   or homun == VANILMIRTH_H2
+  -- then
+  --   result = GetMyEnemyB(myid)
+  -- end
+
+  return GetMyEnemyB(myid)
+end
+
+-------------------------------------------
+--  ANY MOB IS ATTACKING IS MY ENEMY
+-------------------------------------------
+function GetMyEnemyA(myid)
+  local result = 0
+  local owner = GetV(V_OWNER, myid)
+  local actors = GetActors()
+  local enemys = {}
+  local index = 1
+  local target
+  for i, v in ipairs(actors) do
+    if v ~= owner and v ~= myid then
+      target = GetV(V_TARGET, v)
+      if target == myid then
+        enemys[index] = v
+        index = index + 1
+      end
+    end
+  end
+
+  local min_dis = 100
+  local dis
+  for i, v in ipairs(enemys) do
+    dis = GetDistance2(myid, v)
+    if dis < min_dis then
+      result = v
+      min_dis = dis
+    end
+  end
+
+  return result
+end
+
+-------------------------------------------
+--  ANY MOBE IS MyEnemy
+-------------------------------------------
+function GetMyEnemyB(myid)
+  local result = 0
+  local owner = GetV(V_OWNER, myid)
+  local actors = GetActors()
+  local enemys = {}
+  local index = 1
+  for _, v in ipairs(actors) do
+    if v ~= owner and v ~= myid then
+      if 1 == IsMonster(v) then
+        enemys[index] = v
+        index = index + 1
+      end
+    end
+  end
+
+  local min_dis = 100
+  local dis
+  for i, v in ipairs(enemys) do
+    dis = GetDistance2(myid, v)
+    if dis < min_dis then
+      result = v
+      min_dis = dis
+    end
+  end
+
+  return result
+end

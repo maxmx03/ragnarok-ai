@@ -243,19 +243,39 @@ local State = {
   [IDLE] = function()
     TraceAI 'IDLE'
 
+    local distance = GetDistanceFromOwner(Humunculu.id)
+
     local cmd = List.popleft(Command.ResCmdList)
     if cmd ~= nil then
       ProcessCommand(cmd)
     end
 
-    local distance = GetDistanceFromOwner(Humunculu.id)
     if distance > 3 or distance < -1 then
       Humunculu.state = 'follow'
       TraceAI 'IDLE -> FOLLOW'
-    else
-      Humunculu.state = 'watch'
-      TraceAI 'IDLE -> WATCH'
+      return
     end
+
+    local enemy = GetOwnerEnemy(Humunculu.id)
+
+    if enemy ~= 0 then
+      Enemy.id = enemy
+      Humunculu.state = 'chase'
+      TraceAI 'IDLE -> CHASE'
+      return
+    end
+
+    enemy = GetMyEnemy(Humunculu.id)
+
+    if enemy ~= 0 then
+      Enemy.id = enemy
+      Humunculu.state = 'chase'
+      TraceAI 'IDLE -> CHASE'
+      return
+    end
+
+    Humunculu.state = 'watch'
+    TraceAI 'IDLE -> WATCH'
   end,
   [FOLLOW] = function()
     TraceAI 'FOLLOW'
@@ -266,6 +286,7 @@ local State = {
 
     if OwnerNotMoving or OwnerTooClose then
       Humunculu.state = 'idle'
+      MoveToOwner(Humunculu.id)
       TraceAI 'FOLLOW -> IDLE : OWNER_NOT_MOVING | OWNER_TOO_CLOSE'
     else
       MoveToOwner(Humunculu.id)
@@ -274,7 +295,7 @@ local State = {
   end,
   [CHASE] = function()
     TraceAI 'CHASE'
-    local OwnerTooFar = GetDistanceFromOwner(Owner.id) > 10
+    local OwnerTooFar = GetDistanceFromOwner(Humunculu.id) > 10
 
     if IsOutOfSight(Humunculu.id, Enemy.id) or OwnerTooFar then
       Humunculu.state = 'follow'
