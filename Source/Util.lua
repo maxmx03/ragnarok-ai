@@ -267,8 +267,9 @@ function GetMyEnemyB(myid)
   local enemys = {}
   local index = 1
   for _, v in ipairs(actors) do
+    local isNotMoving = GetV(V_MOTION, v) == MOTION_SIT or GetV(V_MOTION, v) == MOTION_STAND
     if v ~= owner and v ~= myid then
-      if 1 == IsMonster(v) then
+      if 1 == IsMonster(v) and not isNotMoving then
         enemys[index] = v
         index = index + 1
       end
