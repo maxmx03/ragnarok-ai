@@ -2,13 +2,13 @@ require 'AI.USER_AI.Source.Util'
 require 'AI.USER_AI.Source.Const'
 local Skill = require 'AI.USER_AI.Source.Skill'
 
----@class Humunculu
+---@class Humun
 ---@field public id number
 ---@field public enemy number
 ---@field public skills table
 ---@field public skillLevel number
----@field public state 'watch' | 'idle' | 'follow' | 'chase' | 'attack' | 'fighting' | 'damage' | 'health' | 'dying' | 'dead'
-local Humunculu = {
+---@field public state 'watch' | 'idle' | 'follow' | 'chase' | 'attack' | 'humun_fighting' | 'owner_damaged' | 'owner_health' | 'owner_dying' | 'owner_dead' | "owner_siting"
+local Humun = {
   id = 0,
   skills = {},
   skill = 0,
@@ -28,82 +28,84 @@ local Enemy = {
   id = 0,
 }
 
+CurrentTime = 0
+LastTime = 0
 local Command = {
   ResCmdList = List.new(),
   [NONE_CMD] = function()
     TraceAI 'NONE_CMD'
-    Humunculu.state = 'idle'
+    Humun.state = 'idle'
     Enemy.id = 0
   end,
   [MOVE_CMD] = function(x, y)
     TraceAI 'MOVE_CMD'
-    Move(Humunculu.id, x, y)
-    Humunculu.state = 'idle'
+    Move(Humun.id, x, y)
+    Humun.state = 'idle'
     Enemy.id = 0
   end,
   [STOP_CMD] = function()
     TraceAI 'STOP_CMD'
 
-    if GetV(V_MOTION, Humunculu.id) ~= MOTION_STAND then
-      local y, x = GetV(V_POSITION, Humunculu.id)
-      Move(Humunculu.id, x, y)
+    if GetV(V_MOTION, Humun.id) ~= MOTION_STAND then
+      local y, x = GetV(V_POSITION, Humun.id)
+      Move(Humun.id, x, y)
     end
-    Humunculu.state = 'idle'
+    Humun.state = 'idle'
     Enemy.id = 0
   end,
   [ATTACK_OBJECT_CMD] = function(id)
     TraceAI 'ATTACK_OBJECT_CMD'
 
     Enemy.id = id
-    Humunculu.state = 'chase'
+    Humun.state = 'chase'
   end,
   [ATTACK_AREA_CMD] = function(x, y)
     TraceAI 'ATTACK_AREA_CMD'
-    Move(Humunculu.id, x, y)
-    Humunculu.state = 'chase'
+    Move(Humun.id, x, y)
+    Humun.state = 'chase'
   end,
   [PATROL_CMD] = function(x, y)
     TraceAI 'PATROL_CMD'
-    Move(Humunculu.id, x, y)
-    Enemy.id = GetOwnerEnemy(Humunculu.id)
+    Move(Humun.id, x, y)
+    Enemy.id = GetOwnerEnemy(Humun.id)
 
     if Enemy.id == 0 then
-      Enemy.id = GetMyEnemy(Humunculu.id)
+      Enemy.id = GetMyEnemy(Humun.id)
     end
 
     if Enemy.id ~= 0 then
-      Humunculu.state = 'chase'
+      Humun.state = 'chase'
       TraceAI 'PATROL_CMD -> CHASE'
     end
   end,
   [HOLD_CMD] = function()
-    -- FIX: GRAVITY DEVELOPERS NEED TO FIX THIS BUG, NOT ME.
+    -- FIXME: GRAVITY DEVELOPERS NEED TO FIX THIS BUG, NOT ME.
     -- HOLD_CMD IS NOT BEING CALLED, THIS FUNCTION SHOULD BE CALLED WHEN THE OWNER
     -- MARK A TARGET.
   end,
   [SKILL_OBJECT_CMD] = function(level, skill, id)
     TraceAI 'SKILL_OBJECT_CMD'
     Enemy.id = id
-    Humunculu.skill = skill
-    Humunculu.skillLevel = level
-    Humunculu.state = 'chase'
+    Humun.skill = skill
+    Humun.skillLevel = level
+    Humun.state = 'chase'
     TraceAI 'SKILL_OBJECT_CMD -> CHASE'
   end,
   [SKILL_AREA_CMD] = function(level, skill, x, y)
     TraceAI 'SKILL_AREA_CMD'
-    Move(Humunculu.id, x, y)
+    Move(Humun.id, x, y)
 
-    local destX, destY = GetV(V_POSITION, Humunculu.id)
+    local destX, destY = GetV(V_POSITION, Humun.id)
     ---@diagnostic disable-next-line: redundant-parameter
-    if GetDistance(x, y, destX, destY) <= GetV(V_SKILLATTACKRANGE_LEVEL, Humunculu.id, skill, level) then
-      SkillGround(Humunculu.id, level, skill, destX, destY)
-      Humunculu.state = 'idle'
-      Humunculu.skill = 0
+    if GetDistance(x, y, destX, destY) <= GetV(V_SKILLATTACKRANGE_LEVEL, Humun.id, skill, level) then
+      SkillGround(Humun.id, level, skill, destX, destY)
+      Humun.state = 'idle'
+      Humun.skill = 0
     end
   end,
   [FOLLOW_CMD] = function()
     TraceAI 'FOLLOW_CMD'
-    Humunculu.state = 'follow'
+    Humun.state = 'follow'
     TraceAI 'FOLLOW_CMD -> FOLLOW'
   end,
 }
@@ -129,71 +131,86 @@ end
 local State = {
   [HUMUNCULU_FIGHTING] = function()
     TraceAI 'HUMUNCULU_FIGHTING'
-    for _, skill in pairs(Humunculu.skills) do
+    for index, skill in ipairs(Humun.skills) do
       if
-        skill.id == HLIF_CHANGE
-        or skill.id == HAMI_BLOODLUST
-        or skill.id == HFLI_FLEET
-        or skill.id == HFLI_SPEED
-        or skill.id == MH_GOLDENE_FERSE
-        or skill.id == MH_ANGRIFFS_MODUS
-        or skill.id == MH_MAGMA_FLOW
+          skill.id == HLIF_CHANGE
+          or skill.id == HAMI_BLOODLUST
+          or skill.id == HFLI_FLEET
+          or skill.id == HFLI_SPEED
+          or skill.id == MH_GOLDENE_FERSE
+          or skill.id == MH_ANGRIFFS_MODUS
+          or skill.id == MH_MAGMA_FLOW
       then
-        UseSkill(Humunculu.id, skill, Owner.id)
+        local ok = UseSkill(Humun.id, skill, skill.cooldown, Owner.id)
+        if ok then
+          Humun.skills[index].lastSkillTime = CurrentTime
+        end
       end
     end
-    Humunculu.state = 'idle'
+    Humun.state = 'idle'
   end,
   [OWNER_DAMAGED] = function()
     TraceAI 'OWNER_DAMAGED'
-    for _, skill in pairs(Humunculu.skills) do
+    for index, skill in ipairs(Humun.skills) do
       if skill.id == HLIF_AVOID or skill.id == HAMI_DEFENCE or skill.id == MH_PAIN_KILLER then
-        UseSkill(Humunculu.id, skill, Owner.id)
+        local ok = UseSkill(Humun.id, skill, skill.cooldown, Owner.id)
+        if ok then
+          Humun.skills[index].lastSkillTime = CurrentTime
+        end
       end
     end
-    Humunculu.state = 'idle'
+    Humun.state = 'idle'
   end,
   [OWNER_LOST_HEALTH] = function()
     TraceAI 'OWNER_LOST_HEALTH'
-    for _, skill in pairs(Humunculu.skills) do
+    for index, skill in ipairs(Humun.skills) do
       if skill.id == HLIF_HEAL or skill.id == HVAN_CHAOTIC then
-        UseSkill(Humunculu.id, skill, Owner.id)
+        local ok = UseSkill(Humun.id, skill, skill.cooldown, Owner.id)
+        if ok then
+          Humun.skills[index].lastSkillTime = CurrentTime
+        end
       end
     end
-    Humunculu.state = 'idle'
+    Humun.state = 'idle'
   end,
   [OWNER_DYING] = function()
     TraceAI 'OWNER_DYING'
-    for _, skill in pairs(Humunculu.skills) do
+    for index, skill in ipairs(Humun.skills) do
       if
-        skill.id == HLIF_AVOID
-        or skill.id == HAMI_CASTLE
-        or skill.id == MH_STEINWAND
-        or skill.id == HVAN_CHAOTIC
-        or skill.id == MH_GRANITIC_ARMOR
-        or skill.id == MH_OVERED_BOOST
-        or skill.id == MH_SILENT_BREEZE
+          skill.id == HLIF_AVOID
+          or skill.id == HAMI_CASTLE
+          or skill.id == MH_STEINWAND
+          or skill.id == HVAN_CHAOTIC
+          or skill.id == MH_GRANITIC_ARMOR
+          or skill.id == MH_OVERED_BOOST
+          or skill.id == MH_SILENT_BREEZE
       then
-        UseSkill(Humunculu.id, skill, Owner.id)
+        local ok = UseSkill(Humun.id, skill, skill.cooldown, Owner.id)
+        if ok then
+          Humun.skills[index].lastSkillTime = CurrentTime
+        end
       end
     end
-    Humunculu.state = 'idle'
+    Humun.state = 'idle'
   end,
   [OWNER_DEAD] = function()
     TraceAI 'OWNER_DEAD'
-    for _, skill in pairs(Humunculu.skills) do
+    for index, skill in ipairs(Humun.skills) do
       if skill.id == MH_LIGHT_OF_REGENE then
-        UseSkill(Humunculu.id, skill, Owner.id)
+        local ok = UseSkill(Humun.id, skill, skill.cooldown, Owner.id)
+        if ok then
+          Humun.skills[index].lastSkillTime = CurrentTime
+        end
       end
     end
-    Humunculu.state = 'idle'
+    Humun.state = 'idle'
   end,
   [WATCH] = function()
     TraceAI 'WATCH'
-    local enoughSp = GetSp(Humunculu.id) > GetMaxSp(Humunculu.id) * 0.1
+    local enoughSp = GetSp(Humun.id) > GetMaxSp(Humun.id) * 0.1
 
     if not enoughSp then
-      Humunculu.state = 'idle'
+      Humun.state = 'idle'
       return
     end
 
@@ -201,7 +218,7 @@ local State = {
     local ownerIsDead = ownerMotion == MOTION_DEAD
 
     if ownerIsDead then
-      Humunculu.state = 'dead'
+      Humun.state = 'owner_dying'
       return
     end
 
@@ -211,7 +228,7 @@ local State = {
 
     if ownerDying then
       TraceAI 'WATCH -> OWNER_DYING'
-      Humunculu.state = 'dying'
+      Humun.state = 'owner_dying'
       return
     end
 
@@ -219,31 +236,71 @@ local State = {
 
     if ownerLosingHealth then
       TraceAI 'WATCH -> OWNER_LOST_HEALTH'
-      Humunculu.state = 'health'
+      Humun.state = 'owner_health'
       return
     end
 
+    local ownerMotion = GetV(V_MOTION, Owner.id)
     local ownerBeingDamaged = ownerMotion == MOTION_DAMAGE
-    if ownerBeingDamaged then
+    local enemy = GetOwnerEnemy(Humun.id)
+    if ownerBeingDamaged or enemy ~= 0 then
       TraceAI 'WATCH -> OWNER_DAMAGED'
-      Humunculu.state = 'damage'
+      Humun.state = 'owner_damaged'
       return
     end
 
-    local humunculuMotion = GetV(V_MOTION, Humunculu.id)
+    local humunculuMotion = GetV(V_MOTION, Humun.id)
     local humunculusIsFighting = humunculuMotion == MOTION_ATTACK or humunculuMotion == MOTION_ATTACK2
     if humunculusIsFighting then
       TraceAI 'WATCH -> FIGHTING'
-      Humunculu.state = 'fighting'
+      Humun.state = 'humun_fighting'
       return
     end
 
-    Humunculu.state = 'idle'
+    Humun.state = 'idle'
+  end,
+  [OWNER_SITTING] = function()
+    TraceAI "OWNER_SITTING"
+    local OwnerMotion = GetV(V_MOTION, Owner.id)
+    local OwnerSitting = OwnerMotion == MOTION_SIT
+
+    if not OwnerSitting then
+      Humun.state = "idle"
+      TraceAI "OWNER_SITTING -> IDLE"
+      return
+    end
+
+    local cooldown = math.random(10) * 1000
+
+    if CurrentTime - LastTime > cooldown then
+      if IsOutOfSight(Humun.id, Owner.id) then
+        MoveToOwner(Humun.id)
+        return
+      end
+
+      local destX, destY = GetV(V_POSITION, Owner.id)
+      local randomX = math.random(-10, 10)
+      local randomY = math.random(-10, 10)
+      destX = destX + randomX
+      destY = destY + randomY
+      Move(Humun.id, destX, destY)
+
+      LastTime = CurrentTime
+    end
   end,
   [IDLE] = function()
     TraceAI 'IDLE'
 
-    local distance = GetDistanceFromOwner(Humunculu.id)
+    local OwnerMotion = GetV(V_MOTION, Owner.id)
+    local OwnerSitting = OwnerMotion == MOTION_SIT
+
+    if OwnerSitting then
+      Humun.state = 'owner_siting'
+      TraceAI "IDLE -> SITTING"
+      return
+    end
+
+    local distance = GetDistanceFromOwner(Humun.id)
 
     local cmd = List.popleft(Command.ResCmdList)
     if cmd ~= nil then
@@ -251,30 +308,22 @@ local State = {
     end
 
     if distance > 3 or distance < -1 then
-      Humunculu.state = 'follow'
+      Humun.state = 'follow'
       TraceAI 'IDLE -> FOLLOW'
       return
     end
 
-    local enemy = GetOwnerEnemy(Humunculu.id)
+    local enemy = GetOwnerEnemy(Humun.id)
+    local OwnerIsFighthing = OwnerMotion == MOTION_ATTACK or OwnerMotion == MOTION_ATTACK2
 
-    if enemy ~= 0 then
+    if enemy ~= 0 or OwnerIsFighthing then
       Enemy.id = enemy
-      Humunculu.state = 'chase'
-      TraceAI 'IDLE -> CHASE'
+      Humun.state = 'watch'
+      TraceAI 'IDLE -> WATCH'
       return
     end
 
-    enemy = GetMyEnemy(Humunculu.id)
-
-    if enemy ~= 0 then
-      Enemy.id = enemy
-      Humunculu.state = 'chase'
-      TraceAI 'IDLE -> CHASE'
-      return
-    end
-
-    Humunculu.state = 'watch'
+    Humun.state = 'watch'
     TraceAI 'IDLE -> WATCH'
   end,
   [FOLLOW] = function()
@@ -282,42 +331,42 @@ local State = {
 
     local OwnerMotion = GetV(V_MOTION, Owner.id)
     local OwnerNotMoving = OwnerMotion == MOTION_SIT or OwnerMotion == MOTION_STAND or OwnerMotion == MOTION_DEAD
-    local OwnerTooClose = GetDistanceFromOwner(Humunculu.id) <= 3
+    local OwnerTooClose = GetDistanceFromOwner(Humun.id) <= 3
 
     if OwnerNotMoving or OwnerTooClose then
-      Humunculu.state = 'idle'
-      MoveToOwner(Humunculu.id)
+      Humun.state = 'idle'
+      MoveToOwner(Humun.id)
       TraceAI 'FOLLOW -> IDLE : OWNER_NOT_MOVING | OWNER_TOO_CLOSE'
     else
-      MoveToOwner(Humunculu.id)
+      MoveToOwner(Humun.id)
       TraceAI 'FOLLOW -> FOLLOW'
     end
   end,
   [CHASE] = function()
     TraceAI 'CHASE'
-    local OwnerTooFar = GetDistanceFromOwner(Humunculu.id) > 10
+    local OwnerTooFar = GetDistanceFromOwner(Humun.id) > 10
 
-    if IsOutOfSight(Humunculu.id, Enemy.id) or OwnerTooFar then
-      Humunculu.state = 'follow'
+    if IsOutOfSight(Humun.id, Enemy.id) or OwnerTooFar then
+      Humun.state = 'follow'
       Enemy.id = 0
       TraceAI 'CHASE -> FOLLOW : ENEMY_OUTSIGHT_IN | OWNER_TOO_FAR'
       return
     end
 
-    if IsInAttackSight(Humunculu.id, Enemy.id, Humunculu) then
-      Humunculu.state = 'attack'
+    if IsInAttackSight(Humun.id, Enemy.id, Humun) then
+      Humun.state = 'attack'
       TraceAI 'CHASE -> ATTACK : ENEMY_INATTACKSIGHT_IN'
       return
     end
 
     ---@diagnostic disable-next-line: redundant-parameter
-    local x, y = GetV(V_POSITION_APPLY_SKILLATTACKRANGE, Enemy.id, Humunculu.skill, Humunculu.skillLevel)
-    local destX, destY = GetV(V_POSITION, Humunculu.id)
+    local x, y = GetV(V_POSITION_APPLY_SKILLATTACKRANGE, Enemy.id, Humun.skill, Humun.skillLevel)
+    local destX, destY = GetV(V_POSITION, Humun.id)
     if destX ~= x or destY ~= y then
       ---@diagnostic disable-next-line: redundant-parameter
-      destX, destY = GetV(V_POSITION_APPLY_SKILLATTACKRANGE, Enemy.id, Humunculu.skill, Humunculu.skillLevel)
+      destX, destY = GetV(V_POSITION_APPLY_SKILLATTACKRANGE, Enemy.id, Humun.skill, Humun.skillLevel)
       ---@diagnostic disable-next-line: param-type-mismatch
-      Move(Humunculu.id, destX, destY)
+      Move(Humun.id, destX, destY)
       TraceAI 'CHASE -> CHASE : DESTCHANGED_IN'
       return
     end
@@ -326,22 +375,22 @@ local State = {
     TraceAI 'ATTACK'
 
     local EnemyIsDead = GetV(V_MOTION, Enemy.id) == MOTION_DEAD
-    if IsOutOfSight(Humunculu.id, Enemy.id) or EnemyIsDead then
-      Humunculu.state = 'idle'
+    if IsOutOfSight(Humun.id, Enemy.id) or EnemyIsDead then
+      Humun.state = 'idle'
       TraceAI 'ATTACK -> IDLE'
       return
     end
 
-    if not IsInAttackSight(Humunculu.id, Enemy.id, Humunculu) then
-      Humunculu.state = 'chase'
-      Humunculu.destX, Humunculu.destY = GetV(V_POSITION, Enemy.id)
-      Move(Humunculu.id, Humunculu.destX, Humunculu.destY)
+    if not IsInAttackSight(Humun.id, Enemy.id, Humun) then
+      Humun.state = 'chase'
+      Humun.destX, Humun.destY = GetV(V_POSITION, Enemy.id)
+      Move(Humun.id, Humun.destX, Humun.destY)
       TraceAI 'ATTACK -> CHASE'
       return
     end
 
     ---TODO: ATTACK AN ENEMY WITH A SKILL
-    Attack(Humunculu.id, Enemy.id)
+    Attack(Humun.id, Enemy.id)
     TraceAI 'ATTACK -> ATTACK : BASIC ATTACK'
   end,
 }
@@ -349,10 +398,11 @@ local State = {
 local gotSkill = false
 
 function AI(myid)
-  Humunculu.id = myid
+  Humun.id = myid
   Owner.id = GetV(V_OWNER, myid)
+  CurrentTime = GetTick()
   if not gotSkill then
-    Humunculu.skills = Skill.getSkills(Humunculu)
+    Humun.skills = Skill.getSkills(Humun)
     gotSkill = true
   end
 
@@ -370,7 +420,7 @@ function AI(myid)
     ProcessCommand(msg)
   end
 
-  local action = State[Humunculu.state]
+  local action = State[Humun.state]
 
   if action and type(action) == 'function' then
     action()

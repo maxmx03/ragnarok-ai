@@ -109,7 +109,7 @@ function IsOutOfSight(id1, id2)
   end
 end
 
-function IsInAttackSight(id1, id2, Humunculu)
+function IsInAttackSight(id1, id2, Humun)
   local x1, y1 = GetV(V_POSITION, id1)
   local x2, y2 = GetV(V_POSITION, id2)
   if x1 == -1 or x2 == -1 then
@@ -120,7 +120,7 @@ function IsInAttackSight(id1, id2, Humunculu)
   if MySkill == 0 then
     a = GetV(V_ATTACKRANGE, id1)
   else
-    a = GetV(V_SKILLATTACKRANGE_LEVEL, id1, Humunculu.skill, Humunculu.skillLevel)
+    a = GetV(V_SKILLATTACKRANGE_LEVEL, id1, Humun.skill, Humun.skillLevel)
   end
 
   if a >= d then
@@ -146,13 +146,31 @@ function GetMaxSp(id)
   return GetV(V_MAXSP, id)
 end
 
+---@param currentTime number
+---@param lastTime number
+---@param cooldown number
+local function CanUseSkill(currentTime, lastTime, cooldown)
+  if currentTime - lastTime > cooldown then
+    return true
+  end
+  return false
+end
+
 ---@param id number
 ---@param skill table
+---@param cooldown number
 ---@param target number
-function UseSkill(id, skill, target)
+---@return boolean
+function UseSkill(id, skill, cooldown, target)
   local level = 5
-  SkillObject(id, level, skill.id, target)
-  TraceAI('AUTO_CAST -> USE_SKILL: ' .. skill.id)
+  if CanUseSkill(CurrentTime, skill.lastSkillTime, cooldown) then
+    SkillObject(id, level, skill.id, target)
+    TraceAI('AUTO_CAST -> USE_SKILL: ' .. skill.id)
+    return true
+  else
+    TraceAI("SKILL_IN_COOLDOWN" .. skill.id)
+    return false
+  end
 end
 
 function GetOwnerEnemy(myid)
