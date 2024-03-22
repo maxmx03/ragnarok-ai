@@ -1,3 +1,4 @@
+---@diagnostic disable: redundant-parameter
 require 'AI.USER_AI.Source.Const'
 
 --------------------------------------------
@@ -108,7 +109,7 @@ function IsOutOfSight(id1, id2)
   end
 end
 
-function IsInAttackSight(id1, id2, Humunculu)
+function IsInAttackSight(id1, id2, Humun)
   local x1, y1 = GetV(V_POSITION, id1)
   local x2, y2 = GetV(V_POSITION, id2)
   if x1 == -1 or x2 == -1 then
@@ -119,7 +120,7 @@ function IsInAttackSight(id1, id2, Humunculu)
   if MySkill == 0 then
     a = GetV(V_ATTACKRANGE, id1)
   else
-    a = GetV(V_SKILLATTACKRANGE_LEVEL, id1, Humunculu.skill, Humunculu.skillLevel)
+    a = GetV(V_SKILLATTACKRANGE_LEVEL, id1, Humun.skill, Humun.skillLevel)
   end
 
   if a >= d then
@@ -127,4 +128,181 @@ function IsInAttackSight(id1, id2, Humunculu)
   else
     return false
   end
+end
+
+function GetHp(id)
+  return GetV(V_HP, id)
+end
+
+function GetMaxHp(id)
+  return GetV(V_MAXHP, id)
+end
+
+function GetSp(id)
+  return GetV(V_SP, id)
+end
+
+function GetMaxSp(id)
+  return GetV(V_MAXSP, id)
+end
+
+---@param currentTime number
+---@param lastTime number
+---@param cooldown number
+local function CanUseSkill(currentTime, lastTime, cooldown)
+  if currentTime - lastTime > cooldown then
+    return true
+  end
+  return false
+end
+
+---@param id number
+---@param skill table
+---@param cooldown number
+---@param target number
+---@return boolean
+function UseSkill(id, skill, cooldown, target)
+  local level = 5
+  if CanUseSkill(CurrentTime, skill.lastSkillTime, cooldown) then
+    SkillObject(id, level, skill.id, target)
+    TraceAI('AUTO_CAST -> USE_SKILL: ' .. skill.id)
+    return true
+  else
+    TraceAI("SKILL_IN_COOLDOWN" .. skill.id)
+    return false
+  end
+end
+
+function GetOwnerEnemy(myid)
+  local result = 0
+  local owner = GetV(V_OWNER, myid)
+  local actors = GetActors()
+  local enemys = {}
+  local index = 1
+  local target
+  for i, v in ipairs(actors) do
+    if v ~= owner and v ~= myid then
+      target = GetV(V_TARGET, v)
+      if target == owner then
+        if IsMonster(v) == 1 then
+          enemys[index] = v
+          index = index + 1
+        else
+          local motion = GetV(V_MOTION, i)
+          if motion == MOTION_ATTACK or motion == MOTION_ATTACK2 then
+            enemys[index] = v
+            index = index + 1
+          end
+        end
+      end
+    end
+  end
+
+  local min_dis = 100
+  local dis
+  for i, v in ipairs(enemys) do
+    dis = GetDistance2(myid, v)
+    if dis < min_dis then
+      result = v
+      min_dis = dis
+    end
+  end
+
+  return result
+end
+
+function GetMyEnemy(myid)
+  -- local result = 0
+
+  -- local homun = GetV(V_HOMUNTYPE, myid)
+  -- if
+  --   homun == LIF
+  --   or homun == LIF_H
+  --   or homun == AMISTR
+  --   or homun == AMISTR_H
+  --   or homun == LIF2
+  --   or homun == LIF_H2
+  --   or homun == AMISTR2
+  --   or homun == AMISTR_H2
+  -- then
+  --   result = GetMyEnemyA(myid)
+  -- elseif
+  --   homun == FILIR
+  --   or homun == FILIR_H
+  --   or homun == VANILMIRTH
+  --   or homun == VANILMIRTH_H
+  --   or homun == FILIR2
+  --   or homun == FILIR_H2
+  --   or homun == VANILMIRTH2
+  --   or homun == VANILMIRTH_H2
+  -- then
+  --   result = GetMyEnemyB(myid)
+  -- end
+
+  return GetMyEnemyB(myid)
+end
+
+-------------------------------------------
+--  ANY MOB IS ATTACKING IS MY ENEMY
+-------------------------------------------
+function GetMyEnemyA(myid)
+  local result = 0
+  local owner = GetV(V_OWNER, myid)
+  local actors = GetActors()
+  local enemys = {}
+  local index = 1
+  local target
+  for i, v in ipairs(actors) do
+    if v ~= owner and v ~= myid then
+      target = GetV(V_TARGET, v)
+      if target == myid then
+        enemys[index] = v
+        index = index + 1
+      end
+    end
+  end
+
+  local min_dis = 100
+  local dis
+  for i, v in ipairs(enemys) do
+    dis = GetDistance2(myid, v)
+    if dis < min_dis then
+      result = v
+      min_dis = dis
+    end
+  end
+
+  return result
+end
+
+-------------------------------------------
+--  ANY MOBE IS MyEnemy
+-------------------------------------------
+function GetMyEnemyB(myid)
+  local result = 0
+  local owner = GetV(V_OWNER, myid)
+  local actors = GetActors()
+  local enemys = {}
+  local index = 1
+  for _, v in ipairs(actors) do
+    local isNotMoving = GetV(V_MOTION, v) == MOTION_SIT or GetV(V_MOTION, v) == MOTION_STAND
+    if v ~= owner and v ~= myid then
+      if 1 == IsMonster(v) and not isNotMoving then
+        enemys[index] = v
+        index = index + 1
+      end
+    end
+  end
+
+  local min_dis = 100
+  local dis
+  for i, v in ipairs(enemys) do
+    dis = GetDistance2(myid, v)
+    if dis < min_dis then
+      result = v
+      min_dis = dis
+    end
+  end
+
+  return result
 end
