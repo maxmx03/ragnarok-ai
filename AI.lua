@@ -256,7 +256,7 @@ local State = {
       Humun.state = 'humun_fighting'
       return
     end
-
+    
     Humun.state = 'idle'
   end,
   [OWNER_SITTING] = function()
